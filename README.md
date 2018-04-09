@@ -14,3 +14,5 @@ Till now, the bot contains 3 parts:
 2.EMU type of EMU trains (query by train number, such as "G1312")
 
 3.EMU deparment (query by its number, such as "1040", "2460", etc.)
+
+4.Query for telecode with first letter of station's pinyin
