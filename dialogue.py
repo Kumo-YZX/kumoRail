@@ -1,13 +1,13 @@
 #--------------------------------------------------------------------------------#
 # File name:dialogue.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-03-30
+# Last edit time(Y-m-d):2018-04-09
 # Description:To analyse the text sent by users and search for data in need, 
 #             finally an easy-to-read answer will be returned.
 #--------------------------------------------------------------------------------#
 
 def dialogue(user, word):
-    from lateinfo import tools, db2
+    from lateinfo import tools, db2, hook
     import json
     res = ''
     try:
@@ -23,7 +23,7 @@ def dialogue(user, word):
             res = u'\u6240\u6709\u8f66\u6b21\uff1a'+' & '.join(trainAll)
 # query for information of EMU
         elif category == 2:
-            res = tools.processEmuno(word) 
+            res = hook.processEmuno(word[6:10]) 
 # query for lating inforamtion of a train with its telecode
         elif category == 4:
             resdb = db2.resDb()
@@ -52,7 +52,7 @@ def dialogue(user, word):
 # query for EMU category of D &G &C trains
         elif category == 3:
             from emuinfo import emudb
-            word = str.upper(word)
+            word = str.upper(word[6:len(word)])
             emudb = emudb.emuinfoDb()
             status, emudata = emudb.queryData(word)
             if status:
@@ -78,7 +78,7 @@ def dialogue(user, word):
 # query for telecode of a station by pinyin
         elif category == 5:
             stadb = db2.staDb()
-            staqueryStatus, staData = stadb.searchByPy(word)
+            staqueryStatus, staData = stadb.searchByPy(word[6:len(word)])
             if staqueryStatus:
                 res = u'\u67e5\u8be2\u7ed3\u679c\uff1a'
                 for every in staData:
@@ -87,7 +87,7 @@ def dialogue(user, word):
                 res = u'\u6ca1\u6709\u67e5\u5230\u76f8\u5173\u8f66\u7ad9\uff01'
 # query for time table of a train that are monitored with Chinese!
         elif category == 6:
-            schqueryStatus, schList = db2.schDb().querySch(word[0:-6])
+            schqueryStatus, schList = db2.schDb().querySch(word[6:len(word)])
             if schqueryStatus:
                 stadb = db2.staDb()
                 res = u'\u67e5\u8be2\u7ed3\u679c\uff1a'
@@ -103,7 +103,7 @@ def dialogue(user, word):
         elif category in range(7,11):
             staqueryStatus, sta = db2.staDb().searchByCn(word[category-5:len(word)].decode('utf8'))
             if staqueryStatus:
-                resqueryStatus, traindata = db2.resDb().getRes(word[0:category-5], sta['staTele'], 15)
+                resqueryStatus, traindata = db2.resDb().getRes(word[0:category-5], sta['staTele'], 30)
                 if resqueryStatus:
                     days = []
                     res = u'\u8f66\u6b21\uff1a'+traindata[0]["trainNum"] + u'\u0020\u5230\u7ad9\uff1a'+ sta['staCn'] + u'\u0020\u5e94\u5230\uff1a'+tools.int2str(traindata[0]['schTime'])
@@ -121,6 +121,18 @@ def dialogue(user, word):
                     res = u'\u8be5\u8f66\u4e0d\u505c\u9760\u672c\u7ad9\u6216\u65e0\u6570\u636e'
             else:
                 res = u'\u8be5\u7ad9\u53ef\u80fd\u4e0d\u5b58\u5728'
+# ask for user's identify
+        elif category == 11:
+            userqueryStatus, user = db2.userDb().findByName(user)
+            if userqueryStatus:
+                res = u'\u60A8\u7684\u8EAB\u4EFD\uFF1A' + user['userIdentify']
+            else:
+                res = u'\u6CA1\u6709\u60A8\u7684\u7528\u6237\u6570\u636E\uFF01'
+            
+        elif category == 12:
+            res = hook.getTrainArrival(word[6:len(word)])
+            
+
 # an error occurs
         elif category == 99:
             res = 'tools error'
@@ -130,6 +142,7 @@ def dialogue(user, word):
     except Exception,Argument:
         print Argument
         res = 'dialogue error'
+
     diadb = diaDb()
     res = res.encode('utf8')
     diadb.write(user, word, res)
