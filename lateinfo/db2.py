@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:db2.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-03-27
+# Last edit time(Y-m-d):2018-04-08
 # Description:This is the model of main database that contains lating information
 #             and station information and list of trains.
 #--------------------------------------------------------------------------------#
@@ -100,8 +100,8 @@ class schDb(db):
         else:
             return 0, []
 
-    def deleteSch(self, trainNum):
-        if trainNum == '':
+    def deleteSch(self, trainNum='ALL'):
+        if trainNum == 'ALL':
             deleteObj = self.__schs.delete_many({})
             return deleteObj.deleted_count
         else:
@@ -152,3 +152,43 @@ class resDb(db):
             return 1, res
         else:
             return 0, []
+
+class userDb(db):
+
+    def __init__(self):
+        db.__init__(self)
+        self.__user = self.mydb.userSet
+
+    def addUser(self, userName, userIdentify, userId):
+        self.__user.insert_one({"userName":userName, "userIdentify":userIdentify, "userId":userId})
+        return 1
+
+    def findByName(self, userName):
+        res = self.__user.find({"userName":userName})
+        if res.count():
+            return 1,res[0]
+        else:
+            return 0,{}
+
+    def findById(self, userId):
+        res = self.__user.find({"userId":userId})
+        if res.count():
+            return 1,res[0]
+        else:
+            return 0,{}
+
+    def findByIdentify(self, userIdentify):
+        res = self.__user.find({"userIdentify":userIdentify})
+        if res.count():
+            return 1,res
+        else:
+            return 0,[]
+    
+    def deleteUser(self, userName='ALL'):
+        if userName == 'ALL':
+            deleteObj = self.__user.delete_many({})
+            return deleteObj.deleted_count
+        else:
+            deleteObj = self.__user.delete_many({"userName":userName})
+            return deleteObj.deleted_count
+
