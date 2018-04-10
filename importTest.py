@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:importTest.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-05
+# Last edit time(Y-m-d):2018-04-08
 # Description:Some function for importing necessary data from json file(s) or 
 #             webpages and testing models.
 #--------------------------------------------------------------------------------#
@@ -25,6 +25,7 @@ def importTimetable(filename='lateinfo/allsch.json'):
     with open(filename, 'r') as fi:
         allsch = json.load(fi)
     schdb = db2.schDb()
+    print str(schdb.deleteSch()) + ':deleted'
     for every in allsch:
         schdb.saveJson(every)
     print 'import sch done'
@@ -40,6 +41,17 @@ def importResult(filename='lateinfo/allres.json'):
         every['resTime'] = datetime.strptime(every['resTime'], '%Y-%m-%d-%H-%M-%S')
         resdb.saveJson(every)
     print 'import res done'
+
+def addUser(filename='lateinfo/users.json'):
+    import json
+    from lateinfo import db2
+    with open(filename, 'r') as fi:
+        users = json.load(fi)
+    userdb = db2.userDb()
+    for every in users:
+        userdb.addUser(every['name'], every['identify'], every['id'])
+        print every['name'] + ':added'
+    print 'adduser done'
 
 def importTest():
     importEmuTrainInfo()
