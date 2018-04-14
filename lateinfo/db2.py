@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:db2.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-08
+# Last edit time(Y-m-d):2018-04-14
 # Description:This is the model of main database that contains lating information
 #             and station information and list of trains.
 #--------------------------------------------------------------------------------#
@@ -27,14 +27,14 @@ class staDb(db):
         import urllib2
         import re
         SiteUrl = 'https://kyfw.12306.cn/otn/resources/js/framework/station_name.js'#?station_version=1.9025'
-        RawData = urllib2.urlopen(SiteUrl)
+        RawData = urllib2.urlopen(SiteUrl, timeout=8)
         GetData = re.findall(r'\@\w+\|'+ u"[\x80-\xff]+"+ r'\|\w+\|\w+\|\w+\|\d{1,4}', RawData.read())
         for EveryData in GetData:
             InfoSplit = EveryData.split('|')
             self.__stas.insert_one({"staCn": InfoSplit[1].decode('utf8'), "staTele": InfoSplit[2], "staPy": InfoSplit[4], "staNum":int(InfoSplit[5])})
         return 1
 
-    def deleteSta(self, teleCode):
+    def deleteSta(self, teleCode=''):
         if teleCode == '':
             deleteObj = self.__stas.delete_many({})
             return deleteObj.deleted_count
@@ -75,11 +75,11 @@ class schDb(db):
 
     def  __init__(self):
         db.__init__(self)
-        self.__schs = self.mydb.schSet
+        self.__schs = self.mydb.schSet2
         print 'schDb Init Done'
 
-    def saveSch(self, trainNum, arrSta, arrTime):
-        self.__schs.insert_one({"trainNum": trainNum, "arrSta": arrSta, "arrTime": arrTime})
+    def saveSch(self, trainNum, arrSta, arrTime, group):
+        self.__schs.insert_one({"trainNum": trainNum, "arrSta": arrSta, "arrTime": arrTime, "group":group})
         return 1
 
     def saveJson(self, schDict):
@@ -138,8 +138,8 @@ class resDb(db):
         else:
             return 0, []
 
-    def deleteRes(self, trainNum):
-        if trainNum == '':
+    def deleteRes(self, trainNum='ALL'):
+        if trainNum == 'ALL':
             deleteObj = self.__ress.delete_many({})
             return deleteObj.deleted_count
         else:
