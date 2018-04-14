@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:hook.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-10
+# Last edit time(Y-m-d):2018-04-14
 # Description:Provide hooks to catch data from website.
 #--------------------------------------------------------------------------------#
 import urllib2, json
@@ -60,7 +60,7 @@ def getTrainArrival(trainNum):
             everyTrain[-1]['start_time'] ='-----'
             res =u'\u5217\u8f66\u7b49\u7ea7\uff1a' +everyTrain[0]['train_class_name'] +u'\u0020\u8f66\u6b21\uff1a' +everyTrain[0]['station_train_code']
             for every in everyTrain:
-                res = res +'\n' +every['station_name'] +u'\u0020'*(6-len(every['station_name'])) +every['arrive_time'] +u'\u0020' +every['start_time']
+                res = res +'\n' +every['station_name'] +'--'*(6-len(every['station_name'])) +every['arrive_time'] +'--' +every['start_time']
         else:
             print 'void trainStr here'
     return res
