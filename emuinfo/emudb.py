@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:emudb.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-03
+# Last edit time(Y-m-d):2018-04-15
 # Description:This is the model of emuDB.EmuDB is the database that stores 
 #             information about emu trains.This infomation contians emu model
 #             (as type), department, departure&arrival station and so on.Function
@@ -10,11 +10,17 @@
 
 from pymongo import MongoClient
 
-class emuinfoDb(object):
+class emuDb(object):
+    def __init__(self, address='127.0.0.1', port=27019):
+        self.mydb =MongoClient(address, port).emudb
+        print 'emudb loaded'
 
-    def __init__(self, address='127.0.0.1', port=27017):
-        self.__mySet = MongoClient(address, port).emuDb.emuinfoSet
-        print 'emuinfoDb init Done'
+class emuinfoDb(emuDb):
+
+    def __init__(self):
+        emuDb.__init__(self)
+        self.__mySet = self.mydb.emuinfoSet
+        print 'emuinfoSet loaded'
 
     def storeData(self, infoDict):# trainNo, havedata, emutype, vehicleDep, staffDep, startSta, endSta, sequence, remark)
         self.__mySet.insert_one(infoDict)
@@ -25,7 +31,7 @@ class emuinfoDb(object):
         if res.count():
             return 1, res[0]
         else:
-            return 0, []
+            return 0, {}
         
     def updateInfo(self, infoDict):
         res = self.__mySet.find_one({"trainNo":infoDict["trainNo"]})
@@ -39,9 +45,39 @@ class emuinfoDb(object):
     def allInfo(self):
         return 1, self.__mySet.find({})
     
-    def deleteInfo(self, trainNo):
-        deleteObj = self.__mySet.delete_many({"trainNo":trainNo})
-        return deleteObj.deleted_count
+    def deleteInfo(self, trainNo='ALL'):
+        if trainNo =='ALL':
+            deleteObj = self.__mySet.delete_many({})
+            return deleteObj.deleted_count
+        else:
+            deleteObj = self.__mySet.delete_many({"trainNo":trainNo})
+            return deleteObj.deleted_count
+
+class emuseqDb(emuDb):
+
+    def __init__(self):
+        emuDb.__init__(self)
+        self.__mySet = self.mydb.emuseqSet
+        print 'emuseqSet loaded'
+    
+    def insertSeq(self, seqDict):
+        self.__mySet.insert_one(seqDict)
+        return 1
+    
+    def queryBySeqnum(self, num):
+        res =self.__mySet.find({'seqNum':num})
+        if res.count():
+            return 1,res[0]
+        else:
+            return 0,{}
+    
+    def deleteSeq(self,num=-1):
+        if num ==-1:
+            deleteObj = self.__mySet.delete_many({})
+            return deleteObj.deleted_count
+        else:
+            deleteObj = self.__mySet.delete_many({"seqNum":num})
+            return deleteObj.deleted_count
 
 def store(fileName='emuinfo.json'):
     import json
