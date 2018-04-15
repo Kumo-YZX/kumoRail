@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:dialogue.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-09
+# Last edit time(Y-m-d):2018-04-15
 # Description:To analyse the text sent by users and search for data in need, 
 #             finally an easy-to-read answer will be returned.
 #--------------------------------------------------------------------------------#
@@ -53,11 +53,14 @@ def dialogue(user, word):
         elif category == 3:
             from emuinfo import emudb
             word = str.upper(word[6:len(word)])
-            emudb = emudb.emuinfoDb()
-            status, emudata = emudb.queryData(word)
+            myemudb = emudb.emuinfoDb()
+            myseqdb =emudb.emuseqDb()
+            status, emudata = myemudb.queryData(word)
             if status:
                 # print 'status1'
                 if emudata['haveData']:
+                    if emudata['sequence']:
+                        statusq, seqdata = myseqdb.queryBySeqnum(emudata['sequence'])
                     # print 'havedata'
                     with open('emuinfo/stamap2.json', 'r') as fi:
                         stamap = json.load(fi)
@@ -71,6 +74,13 @@ def dialogue(user, word):
                         res = u'\u8f66\u6b21\uff1a'+emudata['trainNo']+u'\n\u8f66\u578b\uff1a'+emudata['emuType']+u'\n\u59cb\u53d1\uff1a'+startSta['staCn']+u'\n\u7ec8\u5230\uff1a'+endSta['staCn']+u'\n\u52a8\u8f66\u6bb5\uff1a'+depmap[emudata['vehicleDep']-1]+u'\n\u5ba2\u8fd0\u6bb5\uff1a'+depmap[emudata['staffDep']-1]
                     else:
                         res = u'\u914d\u5c5e\u67e5\u8be2\uff1a\u7ad9\u70b9\u5728\u6570\u636e\u5e93\u627e\u4e0d\u5230'
+                    if statusq:
+                        seqStr =''
+                        for every in seqdata['seqTrains']:
+                            seqStr =seqStr +every+'-'
+                        res =res +u'\n\u4EA4\u8DEF\uFF1A' +seqStr[0:-1]
+                    else:
+                        res =res +u'\n\u4EA4\u8DEF\uFF1A\u672A\u67E5\u5230'
                 else:
                     res = u'\u8f66\u6b21\uff1a'+emudata['trainNo']+u'\u5b58\u5728\uff0c\u4f46\u65e0\u6570\u636e'
             else:
