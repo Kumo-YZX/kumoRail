@@ -31,7 +31,10 @@ class trainData(object):
         for every in unpackedData:
             if every['ticket_no']==self.__trainNum:
                 self.__trainStrcode.append(every['train_code'])
-        return 1
+        if len(self.__trainStrcode):
+            return 1
+        else:
+            return 2
 
     def getTrainTimetable(self):
         print self.__trainStrcode
@@ -48,13 +51,13 @@ class trainData(object):
 
 def getTrainArrival(trainNum):
     mytrain = trainData()
-    if not mytrain.setTrainNum(trainNum):
-        return u'\u67E5\u8BE2\u5217\u8868\u65F6\uFF0C\u670D\u52A1\u5668\u5B95\u673A\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5\uFF01'
-    if not mytrain.getTrainStrcode():
-        return u'\u67E5\u8BE2\u8F66\u6B21\u65F6\uFF0C\u670D\u52A1\u5668\u5B95\u673A\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5\uFF01'
+    mytrain.setTrainNum(trainNum)
+    if mytrain.getTrainStrcode() in [0,2]:
+        return u'\u6CA1\u6709\u8BE5\u8F66\u6B21\uFF0C\u6216\u8005\u662F\u670D\u52A1\u5668\u9519\u8BEF'
     data = mytrain.getTrainTimetable()
     res =u'\u6CA1\u6709\u67E5\u8BE2\u5230\u8BE5\u8F66\u6B21\u4FE1\u606F\uFF01'
     for everyTrain in data:
+        print everyTrain
         if everyTrain != []:
             everyTrain[0]['arrive_time'] ='-----'
             everyTrain[-1]['start_time'] ='-----'
