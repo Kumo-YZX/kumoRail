@@ -22,8 +22,8 @@ def dialogue(user, word):
                     trainAll.append(every['trainNum'])
             res = u'\u6240\u6709\u8f66\u6b21\uff1a'+' & '.join(trainAll)
 # query for information of EMU
-        elif category == 2:
-            res = hook.processEmuno(word[6:10]) 
+        elif category in [2,13]:
+            res = hook.processEmuno(word[len(word)-4:len(word)]) 
 # query for lating inforamtion of a train with its telecode
         elif category == 4:
             resdb = db2.resDb()
@@ -50,9 +50,12 @@ def dialogue(user, word):
             else:
                 res = u'\u6b63\u665a\u70b9\u67e5\u8be2\uff1a\u7ad9\u70b9\u5728\u6570\u636e\u5e93\u627e\u4e0d\u5230'
 # query for EMU category of D &G &C trains
-        elif category == 3:
+        elif category in [3,14]:
             from emuinfo import emudb
-            word = str.upper(word[6:len(word)])
+            if category ==3:
+                word = str.upper(word[6:len(word)])
+            else:
+                word = str.upper(word[2:len(word)])
             myemudb = emudb.emuinfoDb()
             myseqdb =emudb.emuseqDb()
             status, emudata = myemudb.queryData(word)
@@ -86,9 +89,13 @@ def dialogue(user, word):
             else:
                 res = u'\u8f66\u6b21\u4e0d\u5b58\u5728\uff0c\u4e5f\u65e0\u6570\u636e'
 # query for telecode of a station by pinyin
-        elif category == 5:
+        elif category in [5,15]:
+            if category ==5:
+                word = str.lower(word[6:len(word)])
+            else:
+                word = str.lower(word[2:len(word)])
             stadb = db2.staDb()
-            staqueryStatus, staData = stadb.searchByPy(word[6:len(word)])
+            staqueryStatus, staData = stadb.searchByPy(word)
             if staqueryStatus:
                 res = u'\u67e5\u8be2\u7ed3\u679c\uff1a'
                 for every in staData:
@@ -96,8 +103,12 @@ def dialogue(user, word):
             else:
                 res = u'\u6ca1\u6709\u67e5\u5230\u76f8\u5173\u8f66\u7ad9\uff01'
 # query for time table of a train that are monitored with Chinese!
-        elif category == 6:
-            schqueryStatus, schList = db2.schDb().querySch(word[6:len(word)])
+        elif category in [6,16]:
+            if category ==6:
+                word = str.upper(word[6:len(word)])
+            else:
+                word = str.upper(word[2:len(word)])
+            schqueryStatus, schList = db2.schDb().querySch(word)
             if schqueryStatus:
                 stadb = db2.staDb()
                 res = u'\u67e5\u8be2\u7ed3\u679c\uff1a'
@@ -138,9 +149,13 @@ def dialogue(user, word):
                 res = u'\u60A8\u7684\u8EAB\u4EFD\uFF1A' + user['userIdentify']
             else:
                 res = u'\u6CA1\u6709\u60A8\u7684\u7528\u6237\u6570\u636E\uFF01'
-            
-        elif category == 12:
-            res = hook.getTrainArrival(word[6:len(word)])
+# query for timetable of a train (online)
+        elif category in [12,18]:
+            if category ==12:
+                word = str.upper(word[6:len(word)])
+            else:
+                word = str.upper(word[2:len(word)])
+            res = hook.getTrainArrival(word)
             
 
 # an error occurs
