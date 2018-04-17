@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:tools.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-09
+# Last edit time(Y-m-d):2018-04-17
 # Description:Many functions that contians analysis tools and transform 
 #             tools.This functions will be combained with other objects in later 
 #             version to make them appropriate.
@@ -10,11 +10,31 @@
 # judge query category
 def wordAnalyse(word):
 	try:
+		word02 =str.upper(word[0:2])
+		word06 =word[0:6]
 		print 'word is str type or other'
-		if word=='all':
+		if str.upper(word)=='ALL':
 			return 1
+		
+		if word02 == 'PS':
+			return 13
+		
+		if word02 == 'JL':
+			return 14
 
-		print 'str contain chinese'
+		if word02 == 'DB':
+			return 15
+
+		if word02 == 'JK':
+			return 16
+
+		if word02 == 'SF':
+			return 11
+		
+		if word02 == 'SK':
+			return 18
+
+		print 'str contains chinese'
 		# byteword = word.encode('utf8')
 		print word
 		if word == '\xE8\xBA\xAB\xE4\xBB\xBD':
@@ -23,22 +43,22 @@ def wordAnalyse(word):
 		if word == '\xE6\x89\x80\xE6\x9C\x89\xE8\xBD\xA6\xE6\xAC\xA1':
 			return 1
 		
-		if word[0:6] == '\xE4\xBA\xA4\xE8\xB7\xAF':
+		if word06 == '\xE4\xBA\xA4\xE8\xB7\xAF':
 			return 3
 
-		if word[0:6] == '\xE6\x97\xB6\xE5\x88\xBB':
+		if word06 == '\xE6\x97\xB6\xE5\x88\xBB':
 			return 12
 		
-		if word[0:6] == '\xE9\x85\x8D\xE5\xB1\x9E':
+		if word06 == '\xE9\x85\x8D\xE5\xB1\x9E':
 			return 2
 		
-		if word[0:6] == '\xE7\x94\xB5\xE6\x8A\xA5':
+		if word06 == '\xE7\x94\xB5\xE6\x8A\xA5':
 			return 5
 
-		if word[0:6] == '\xE7\x9B\x91\xE6\x8E\xA7':
+		if word06 == '\xE7\x9B\x91\xE6\x8E\xA7':
 			return 6
 
-		if word[0] in ['Z', 'T', 'K', 'G', 'D', 'C', 'Y', 'S'] +range(49,58) and (len(word)<21 and len(word)>7):
+		if str.upper(word[0]) in ['Z', 'T', 'K', 'G', 'D', 'C', 'Y', 'S'] +range(49,58) and (len(word)<21 and len(word)>7):
 			location = 2
 			for location in range(2, 6):
 				if word[location] < '0' or word[location] > '9':
