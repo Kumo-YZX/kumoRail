@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:dialogue.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-15
+# Last edit time(Y-m-d):2018-04-17
 # Description:To analyse the text sent by users and search for data in need, 
 #             finally an easy-to-read answer will be returned.
 #--------------------------------------------------------------------------------#
@@ -49,7 +49,7 @@ def dialogue(user, word):
                     res = u'\u6570\u636e\u5e93\u5185\u6ca1\u6709\u8be5\u7ad9\u7684\u6570\u636e\uff1f'
             else:
                 res = u'\u6b63\u665a\u70b9\u67e5\u8be2\uff1a\u7ad9\u70b9\u5728\u6570\u636e\u5e93\u627e\u4e0d\u5230'
-# query for EMU category of D &G &C trains
+# query for EMU category of D &G &C trains and sequence
         elif category in [3,14]:
             from emuinfo import emudb
             if category ==3:
@@ -62,6 +62,7 @@ def dialogue(user, word):
             if status:
                 # print 'status1'
                 if emudata['haveData']:
+                    statusq =0
                     if emudata['sequence']:
                         statusq, seqdata = myseqdb.queryBySeqnum(emudata['sequence'])
                     # print 'havedata'
@@ -124,7 +125,7 @@ def dialogue(user, word):
         elif category in range(7,11):
             staqueryStatus, sta = db2.staDb().searchByCn(word[category-5:len(word)].decode('utf8'))
             if staqueryStatus:
-                resqueryStatus, traindata = db2.resDb().getRes(word[0:category-5], sta['staTele'], 30)
+                resqueryStatus, traindata = db2.resDb().getRes(str.upper(word[0:category-5]), sta['staTele'], 16)
                 if resqueryStatus:
                     days = []
                     res = u'\u8f66\u6b21\uff1a'+traindata[0]["trainNum"] + u'\u0020\u5230\u7ad9\uff1a'+ sta['staCn'] + u'\u0020\u5e94\u5230\uff1a'+tools.int2str(traindata[0]['schTime'])
