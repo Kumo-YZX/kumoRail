@@ -4,7 +4,10 @@
 # Last edit time(Y-m-d):2018-04-14
 # Description:Provide hooks to catch data from website.
 #--------------------------------------------------------------------------------#
-import urllib2, json
+import urllib2, json, socket
+
+header={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
+            "Accept":"*/*"}
 
 class trainData(object):
 
@@ -48,6 +51,51 @@ class trainData(object):
             return 0
 
         return unpackedData
+
+class getLate(object):
+
+    def __init__(self, staGbk, trainNum, dayStr, staUtf, timeStr, proxyFilename='proxyList.json'):
+        self._apiUrl ='http://dynamic.12306.cn'+\
+                      '/mapping/kfxt/zwdcx/LCZWD/cx.jsp?'+\
+                      'cz=' +staGbk+\
+                      '&cc='+trainNum+\
+                      '&cxlx=0&rq='+dayStr+\
+                      '&czEn=' +staUtf+\
+                      '&tp=' +timeStr
+        print self._apiUrl
+        with open(proxyFilename, 'r') as fi:
+            self._proxyList =json.load(fi)
+
+    def proxyGet(self, proxyNo):
+        self._proxyUrl ='http://user:password@' +self._proxyList[proxyNo]['address']+':'+str(self._proxyList[proxyNo]['port'])
+        print self._proxyUrl
+        proxySupport = urllib2.ProxyHandler({'http':self._proxyUrl})
+        opener = urllib2.build_opener(proxySupport)
+        urllib2.install_opener(opener)
+        try:
+            request = urllib2.Request(self._apiUrl, headers=header)
+            Res2 = urllib2.urlopen(request, timeout=5).read().decode('gbk')
+        except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error) as error:
+            print error
+            print 'proxy connect failed : ' +self._proxyUrl
+            self._proxyList[proxyNo]['fail'] +=1
+            return 0, ''
+        return 1, Res2
+
+    def localGet(self):
+        try:
+            request = urllib2.Request(self._apiUrl, headers=header)
+            Res2 = urllib2.urlopen(request, timeout=5).read().decode('gbk')
+        except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error) as error:
+            print error
+            print 'local connect failed'
+            return 0, ''
+        return 1, Res2
+
+    def writeProxyFile(self, proxyFilename='proxyList.json'):
+        with open(proxyFilename, 'w') as fo:
+            json.dump(self._proxyList, fo)
+        return 1
 
 def getTrainArrival(trainNum):
     mytrain = trainData()
