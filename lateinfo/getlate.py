@@ -10,6 +10,7 @@
 import tools
 import json
 import db2, hook, datetime, random, re, time, socket
+import tgapi
 
 def getData():
 
@@ -19,6 +20,7 @@ def getData():
     # header={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
     #         "Accept":"*/*"}
     queryCache = []
+    tgChat =tgapi.message()
 
     while(True):
         
@@ -31,6 +33,7 @@ def getData():
         queryEndInt = nowInt +5 if nowInt <1435 else nowInt -1435
         resStartInt = nowInt -5 if nowInt >4 else nowInt +1435
         resEndInt = nowInt -2 if nowInt >1 else nowInt +1438
+        # find schs in the window
         if queryEndInt > queryStartInt:
             state, res = schqdb.getSch(queryStartInt, queryEndInt)
         else:
@@ -74,10 +77,12 @@ def getData():
                                        queryCache[i]['trainNum'],
                                        today,
                                        tools.EncodeUtf8(staInfo['staCn']),
-                                       datetime.datetime.now().strftime("%s")+ str(random.randint(1000,9999)))
-                while(proxyUsed <5):
-                    if proxyUsed ==4:
+                                       datetime.datetime.now().strftime("%s")+ str(random.randint(1000,9999)),
+                                       queryCache[i]['group'])
+                while(proxyUsed <3):
+                    if proxyUsed ==3:
                         getStatus, Res2 =lateData.localGet()
+                        tgChat.sendMsg(textMsg= ('group ' + str(queryCache[i]['group'])+ 'has failed for 3 times and used local connect'))
                         break
                     getStatus, Res2 =lateData.proxyGet(proxyUsed)
                     if getStatus:
@@ -87,10 +92,11 @@ def getData():
                 Res2 = Res2 +'99:99'
                 ActAr = re.findall('\\d{2}:\\d{2}', Res2)
                 # ActNo = re.findall('\w\d{1,4}', Res.read())
-                print 'Re: '+u'\u8f66\u6b21\uff1a'+queryCache[i]['trainNum']+\
-                        ' | '+u'\u5230\u7ad9\uff1a'+staInfo['staCn']+staInfo['staTele']+\
-                        ' | '+u'\u5e94\u5230\uff1a'+tools.int2str(queryCache[i]['arrTime'])+\
-                        ' | '+u'\u5b9e\u5230\uff1a'+ActAr[0]
+                infoStr = 'Re: '+u'\u8f66\u6b21\uff1a'+queryCache[i]['trainNum']+\
+                          ' | '+u'\u5230\u7ad9\uff1a'+staInfo['staCn']+staInfo['staTele']+\
+                          ' | '+u'\u5e94\u5230\uff1a'+tools.int2str(queryCache[i]['arrTime'])+\
+                          ' | '+u'\u5b9e\u5230\uff1a'+ActAr[0]
+                print infoStr
                 if ActAr[0] == '99:99':
                     queryCache[i]['status'] =queryCache[i]['status'] +1
                     if queryCache[i]['status'] >2:
@@ -111,6 +117,9 @@ def getData():
                     else:
                         print queryCache[i]['trainNum'] +queryCache[i]['arrSta'] +tools.int2str(queryCache[i]['actTime']) +ActAr[0]
                         queryCache[i]['actTime'] = actInt
+                        # late of an hour or more
+                        if actInt-nowInt>60 or (actInt-nowInt>-1440 and actInt-nowInt<-1080):
+                            tgChat.sendMsg(textMsg =infoStr.encode('utf8'))
                         i =i +1
                 
                 print '- '*32

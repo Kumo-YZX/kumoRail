@@ -54,7 +54,7 @@ class trainData(object):
 
 class getLate(object):
 
-    def __init__(self, staGbk, trainNum, dayStr, staUtf, timeStr, proxyFilename='proxyList.json'):
+    def __init__(self, staGbk, trainNum, dayStr, staUtf, timeStr, group=0,proxyFilename='proxyList.json'):
         self._apiUrl ='http://dynamic.12306.cn'+\
                       '/mapping/kfxt/zwdcx/LCZWD/cx.jsp?'+\
                       'cz=' +staGbk+\
@@ -63,12 +63,14 @@ class getLate(object):
                       '&czEn=' +staUtf+\
                       '&tp=' +timeStr
         print self._apiUrl
+        self._group =group
         with open(proxyFilename, 'r') as fi:
             self._proxyList =json.load(fi)
 
     def proxyGet(self, proxyNo):
-        self._proxyUrl ='http://user:password@' +self._proxyList[proxyNo]['address']+':'+str(self._proxyList[proxyNo]['port'])
+        self._proxyUrl ='http://user:password@' +self._proxyList[proxyNo +(self._group)*3]['address']+':'+str(self._proxyList[proxyNo +(self._group)*3]['port'])
         print self._proxyUrl
+        print 'proxy group : ' +str(self._group)
         proxySupport = urllib2.ProxyHandler({'http':self._proxyUrl})
         opener = urllib2.build_opener(proxySupport)
         urllib2.install_opener(opener)
@@ -78,11 +80,15 @@ class getLate(object):
         except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error) as error:
             print error
             print 'proxy connect failed : ' +self._proxyUrl
-            self._proxyList[proxyNo]['fail'] +=1
+            self._proxyList[proxyNo +(self._group)*3]['fail'] +=1
             return 0, ''
         return 1, Res2
-
+    # connect without proxy 
     def localGet(self):
+        print 'local connect'
+        proxySupport = urllib2.ProxyHandler({})
+        opener = urllib2.build_opener(proxySupport)
+        urllib2.install_opener(opener)
         try:
             request = urllib2.Request(self._apiUrl, headers=header)
             Res2 = urllib2.urlopen(request, timeout=5).read().decode('gbk')
