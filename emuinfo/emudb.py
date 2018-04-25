@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:emudb.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-15
+# Last edit time(Y-m-d):2018-04-25
 # Description:This is the model of emuDB.EmuDB is the database that stores 
 #             information about emu trains.This infomation contians emu model
 #             (as type), department, departure&arrival station and so on.Function
@@ -11,7 +11,7 @@
 from pymongo import MongoClient
 
 class emuDb(object):
-    def __init__(self, address='127.0.0.1', port=27019):
+    def __init__(self, address='127.0.0.1', port=27017):
         self.mydb =MongoClient(address, port).emudb
         print 'emudb loaded'
 
