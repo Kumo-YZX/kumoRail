@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:dialogue.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-17
+# Last edit time(Y-m-d):2018-04-24
 # Description:To analyse the text sent by users and search for data in need, 
 #             finally an easy-to-read answer will be returned.
 #--------------------------------------------------------------------------------#
@@ -49,7 +49,7 @@ def dialogue(user, word):
                     res = u'\u6570\u636e\u5e93\u5185\u6ca1\u6709\u8be5\u7ad9\u7684\u6570\u636e\uff1f'
             else:
                 res = u'\u6b63\u665a\u70b9\u67e5\u8be2\uff1a\u7ad9\u70b9\u5728\u6570\u636e\u5e93\u627e\u4e0d\u5230'
-# query for EMU category of D &G &C trains and sequence
+# query for EMU category and sequence of D &G &C trains
         elif category in [3,14]:
             from emuinfo import emudb
             if category ==3:
@@ -61,7 +61,7 @@ def dialogue(user, word):
             status, emudata = myemudb.queryData(word)
             if status:
                 # print 'status1'
-                if emudata['haveData']:
+                if emudata['haveData'] ==1:
                     statusq =0
                     if emudata['sequence']:
                         statusq, seqdata = myseqdb.queryBySeqnum(emudata['sequence'])
@@ -78,6 +78,9 @@ def dialogue(user, word):
                         res = u'\u8f66\u6b21\uff1a'+emudata['trainNo']+u'\n\u8f66\u578b\uff1a'+emudata['emuType']+u'\n\u59cb\u53d1\uff1a'+startSta['staCn']+u'\n\u7ec8\u5230\uff1a'+endSta['staCn']+u'\n\u52a8\u8f66\u6bb5\uff1a'+depmap[emudata['vehicleDep']-1]+u'\n\u5ba2\u8fd0\u6bb5\uff1a'+depmap[emudata['staffDep']-1]
                     else:
                         res = u'\u914d\u5c5e\u67e5\u8be2\uff1a\u7ad9\u70b9\u5728\u6570\u636e\u5e93\u627e\u4e0d\u5230'
+                    if len(emudata['remark']):
+                        res =res +u'\n\u5907\u6CE8\uFF1A' +emudata['remark']
+                    # have sequence data
                     if statusq:
                         seqStr =''
                         for every in seqdata['seqTrains']:
@@ -85,6 +88,8 @@ def dialogue(user, word):
                         res =res +u'\n\u4EA4\u8DEF\uFF1A' +seqStr[0:-1]
                     else:
                         res =res +u'\n\u4EA4\u8DEF\uFF1A\u672A\u67E5\u5230'
+                elif emudata['haveData'] ==2:
+                    res =u'\u8f66\u6b21\uff1a' + emudata['trainNo'] +'\n' +emudata['remark']
                 else:
                     res = u'\u8f66\u6b21\uff1a'+emudata['trainNo']+u'\u5b58\u5728\uff0c\u4f46\u65e0\u6570\u636e'
             else:
@@ -145,9 +150,9 @@ def dialogue(user, word):
                 res = u'\u8be5\u7ad9\u53ef\u80fd\u4e0d\u5b58\u5728'
 # ask for user's identify
         elif category == 11:
-            userqueryStatus, user = db2.userDb().findByName(user)
+            userqueryStatus, userInfo = db2.userDb().findByName(user)
             if userqueryStatus:
-                res = u'\u60A8\u7684\u8EAB\u4EFD\uFF1A' + user['userIdentify']
+                res = u'\u60A8\u7684\u8EAB\u4EFD\uFF1A' + userInfo['userIdentify'] + ' id : ' +str(userInfo['userId'])
             else:
                 res = u'\u6CA1\u6709\u60A8\u7684\u7528\u6237\u6570\u636E\uFF01'
 # query for timetable of a train (online)
@@ -158,6 +163,35 @@ def dialogue(user, word):
                 word = str.upper(word[2:len(word)])
             res = hook.getTrainArrival(word)
             
+# add train arrival to schdb
+        elif category ==19:
+            userdb =db2.userDb()
+            userqueryStatus, userInfo = userdb.findByName(user)
+            if userqueryStatus:
+                res =u'\u6DFB\u52A0\u7ED3\u679C\uFF1A'
+                word = str.upper(word[2:len(word)])
+                trainSch =hook.trainData()
+                trainSch.setTrainNum(word)
+                stadb =db2.staDb()
+                schdb =db2.schDb()
+                if trainSch.getTrainStrcode() in [0,2]:
+                    res =u'\u6CA1\u6709\u8BE5\u8F66\u6B21\u4FE1\u606F\uFF01'
+                else:
+                    schData =trainSch.getTrainTimetable()
+                    for every in schData[0]:
+                        if every['station_no'] =='01':
+                            pass
+                        else:
+                            staQuery, staData =stadb.searchByCn(every['station_name'])
+                            schdb.saveSch(word, staData['staTele'], tools.str2int(every['arrive_time']), userInfo['userId'])
+                            res =res +u'\n'+ every['station_name'] +every['arrive_time']
+            else:
+                res =u'\u6CA1\u6709\u60A8\u7684\u7528\u6237\u4FE1\u606F\uFF01'
+
+        # elif category ==20:
+        #     userdb =db2.userDb()
+        #     userqueryStatus, userInfo = userdb.findByName(user)
+        #     res =u'\u6DFB\u52A0\u7ED3\u679C\uFF1A'
 
 # an error occurs
         elif category == 99:
