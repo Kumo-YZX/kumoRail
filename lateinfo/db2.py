@@ -1,12 +1,13 @@
 #--------------------------------------------------------------------------------#
 # File name:db2.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-14
+# Last edit time(Y-m-d):2018-04-25
 # Description:This is the model of main database that contains lating information
 #             and station information and list of trains.
 #--------------------------------------------------------------------------------#
 
 from pymongo import MongoClient
+zoneDelta =7
 
 class db(object):
 
@@ -124,7 +125,7 @@ class resDb(db):
 
     def saveRes(self, trainNum, arrSta, sch, act):
         import datetime
-        self.__ress.insert_one({"resTime":datetime.datetime.now(), "trainNum":trainNum, "arrSta":arrSta, "schTime":sch, "actTime":act})
+        self.__ress.insert_one({"resTime":datetime.datetime.now() + datetime.timedelta(hours = zoneDelta), "trainNum":trainNum, "arrSta":arrSta, "schTime":sch, "actTime":act})
         return 1
     
     def saveJson(self, resDict):
@@ -192,3 +193,68 @@ class userDb(db):
             deleteObj = self.__user.delete_many({"userName":userName})
             return deleteObj.deleted_count
 
+def exportSch(fileName ='allsch.json'):
+    import json
+    schdb =schDb()
+    schList =[]
+    queryschStatus, allsch =schdb.allSch()
+    if queryschStatus:
+        for every in allsch:
+            schList.append({"trainNum": every['trainNum'], "arrSta": every['arrSta'], "arrTime": every['arrTime'], "group": every['group']})
+        with open(fileName, 'w') as fo:
+            json.dump(schList, fo)
+        print 'export sch done : ' +fileName
+    else:
+        print 'export sch failed'
+    
+def exportRes(fileName ='allres.json'):
+    import json, datetime
+    resdb =resDb()
+    queryresStatus, allres =resdb.allRes()
+    resList =[]
+    if queryresStatus:
+        for every in allres:
+            resList.append({"resTime":every['resTime'].strftime('%Y-%m-%d-%H-%M-%S'), "trainNum":every['trainNum'], "arrSta":every['arrSta'], "schTime":every['schTime'], "actTime":every['actTime']})
+        with open('allres.json', 'w') as fo:
+            json.dump(resList, fo)
+        print 'export res done : ' +fileName
+    else:
+        print 'export res failed'
+
+def importSch(filename='allsch.json'):
+    import json
+    with open(filename, 'r') as fi:
+        allsch = json.load(fi)
+    # for every in allsch:
+    #     every['group'] = 0
+    schdb = schDb()
+    print str(schdb.deleteSch()) + ':deleted'
+    for every in allsch:
+        schdb.saveJson(every)
+    print 'import sch done'
+
+def importRes(filename='lastres.json'):
+    import json
+    from datetime import datetime
+    with open(filename, 'r') as fi:
+        allres = json.load(fi)
+    resdb = resDb()
+    print str(resdb.deleteRes()) +':deleted'
+    for every in allres:
+        every['resTime'] = datetime.strptime(every['resTime'], '%Y-%m-%d-%H-%M-%S')
+        resdb.saveJson(every)
+    print 'import res done'
+
+if __name__ =="__main__":
+    import sys
+    task =sys.argv[1]
+    if task =='expsch':
+        exportSch()
+    elif task =='expres':
+        exportRes()
+    elif task =='impsch':
+        importSch()
+    elif task =='impres':
+        importRes()
+    else:
+        print 'nothing done'
