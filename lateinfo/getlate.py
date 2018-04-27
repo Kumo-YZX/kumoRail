@@ -79,7 +79,7 @@ def getData():
                                        tools.EncodeUtf8(staInfo['staCn']),
                                        datetime.datetime.now().strftime("%s")+ str(random.randint(1000,9999)),
                                        queryCache[i]['group'])
-                while(proxyUsed <3):
+                while(proxyUsed <4):
                     if proxyUsed ==3:
                         getStatus, Res2 =lateData.localGet()
                         tgChat.sendMsg(textMsg= ('group ' + str(queryCache[i]['group'])+ 'has failed for 3 times and used local connect'))
@@ -102,6 +102,7 @@ def getData():
                     if queryCache[i]['status'] >2:
                         print 'too many bad connection, quit'
                         queryCache.pop(i)
+                    i =i +1
                 else:
                     actInt =tools.str2int(ActAr[0])
                     if nowInt-actInt>=0 and nowInt-actInt<=60:
