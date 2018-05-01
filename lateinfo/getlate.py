@@ -82,7 +82,7 @@ def getData():
                 while(proxyUsed <4):
                     if proxyUsed ==3:
                         getStatus, Res2 =lateData.localGet()
-                        tgChat.sendMsg(textMsg= ('group ' + str(queryCache[i]['group'])+ 'has failed for 3 times and used local connect'))
+                        tgChat.sendMsg(textMsg= ('group ' + str(queryCache[i]['group'])+ ' has failed for 3 times and used local connect'))
                         break
                     getStatus, Res2 =lateData.proxyGet(proxyUsed)
                     if getStatus:
