@@ -5,6 +5,7 @@
 # Description:Provide hooks to catch data from website.
 #--------------------------------------------------------------------------------#
 import urllib2, json, socket
+import writeLog
 
 header={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
             "Accept":"*/*"}
@@ -55,6 +56,7 @@ class trainData(object):
 class getLate(object):
 
     def __init__(self, staGbk, trainNum, dayStr, staUtf, timeStr, group=0,proxyFilename='proxyList.json'):
+        log =writeLog.writrLog()
         self._apiUrl ='http://dynamic.12306.cn'+\
                       '/mapping/kfxt/zwdcx/LCZWD/cx.jsp?'+\
                       'cz=' +staGbk+\
@@ -62,15 +64,16 @@ class getLate(object):
                       '&cxlx=0&rq='+dayStr+\
                       '&czEn=' +staUtf+\
                       '&tp=' +timeStr
-        print self._apiUrl
+        log.write(self._apiUrl)
         self._group =group
         with open(proxyFilename, 'r') as fi:
             self._proxyList =json.load(fi)
 
     def proxyGet(self, proxyNo):
+        log =writeLog.writrLog()
         self._proxyUrl ='http://user:password@' +self._proxyList[proxyNo +(self._group)*3]['address']+':'+str(self._proxyList[proxyNo +(self._group)*3]['port'])
-        print self._proxyUrl
-        print 'proxy group : ' +str(self._group)
+        log.write(self._proxyUrl)
+        log.write('proxy group : ' +str(self._group))
         proxySupport = urllib2.ProxyHandler({'http':self._proxyUrl})
         opener = urllib2.build_opener(proxySupport)
         urllib2.install_opener(opener)
@@ -78,14 +81,15 @@ class getLate(object):
             request = urllib2.Request(self._apiUrl, headers=header)
             Res2 = urllib2.urlopen(request, timeout=5).read().decode('gbk')
         except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error) as error:
-            print error
-            print 'proxy connect failed : ' +self._proxyUrl
+            log.write(json.dumps(error))
+            log.write('proxy connect failed : ' +self._proxyUrl)
             self._proxyList[proxyNo +(self._group)*3]['fail'] +=1
             return 0, ''
         return 1, Res2
     # connect without proxy 
     def localGet(self):
-        print 'local connect'
+        log =writeLog.writrLog()
+        log.write('using local connect !!! !!!')
         proxySupport = urllib2.ProxyHandler({})
         opener = urllib2.build_opener(proxySupport)
         urllib2.install_opener(opener)
@@ -93,8 +97,8 @@ class getLate(object):
             request = urllib2.Request(self._apiUrl, headers=header)
             Res2 = urllib2.urlopen(request, timeout=5).read().decode('gbk')
         except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error) as error:
-            print error
-            print 'local connect failed'
+            log.write(json.dumps(error))
+            log.write('local connect failed')
             return 0, ''
         return 1, Res2
 

@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:getlate.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-13
+# Last edit time(Y-m-d):2018-05-05
 # Description:This script runs independently to collect information of trains'
 #             arrival time.An endless loop is held in function getData but it 
 #             will be replaced in later version.
@@ -10,25 +10,27 @@
 import tools
 import json
 import db2, hook, datetime, random, re, time, socket
-import tgapi
+import writeLog
+
+zoneDelta =0 # delta between your timezone and HKT
 
 def getData():
 
     schqdb = db2.schDb()
     staqdb = db2.staDb()
     ressdb = db2.resDb()
+    log =writeLog.writrLog()
+    log.write('getlate starts')
     # header={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
     #         "Accept":"*/*"}
     queryCache = []
-    tgChat =tgapi.message()
 
     while(True):
         
-        zoneDelta =7 # delta between your timezone and cst
         nowTime = datetime.datetime.now() + datetime.timedelta(hours = zoneDelta)
         today = nowTime.strftime('%Y-%m-%d')
         nowInt = nowTime.hour*60 +nowTime.minute
-        print 'Time:' +tools.int2str(nowInt)
+        log.write('Time:' +tools.int2str(nowInt))
         queryStartInt = nowInt +2 if nowInt <1438 else nowInt -1438
         queryEndInt = nowInt +5 if nowInt <1435 else nowInt -1435
         resStartInt = nowInt -5 if nowInt >4 else nowInt +1435
@@ -58,13 +60,13 @@ def getData():
                     everyRes['actTime'] = 1441
                     everyRes['status'] = 0
                     queryCache.append(everyRes)
-        cacheStr = 'cache' +u'\u7684\u957F\u5EA6\uFF1A' +str(len(queryCache)) +':'
+        cacheStr = 'cache length:' +str(len(queryCache)) +' : '
         for everyCache in queryCache:
             cacheStr =cacheStr +everyCache['trainNum'] +\
                     '-' +everyCache['arrSta']+\
                     '-' +tools.int2str(everyCache['arrTime'])+\
                     '-' +tools.int2str(everyCache['actTime'])+' / '
-        print cacheStr
+        log.write(cacheStr)
 
         # try:
         i =0
@@ -82,7 +84,6 @@ def getData():
                 while(proxyUsed <4):
                     if proxyUsed ==3:
                         getStatus, Res2 =lateData.localGet()
-                        tgChat.sendMsg(textMsg= ('group ' + str(queryCache[i]['group'])+ ' has failed for 3 times and used local connect'))
                         break
                     getStatus, Res2 =lateData.proxyGet(proxyUsed)
                     if getStatus:
@@ -92,49 +93,39 @@ def getData():
                 Res2 = Res2 +'99:99'
                 ActAr = re.findall('\\d{2}:\\d{2}', Res2)
                 # ActNo = re.findall('\w\d{1,4}', Res.read())
-                infoStr = 'Re: '+u'\u8f66\u6b21\uff1a'+queryCache[i]['trainNum']+\
-                          ' | '+u'\u5230\u7ad9\uff1a'+staInfo['staCn']+staInfo['staTele']+\
-                          ' | '+u'\u5e94\u5230\uff1a'+tools.int2str(queryCache[i]['arrTime'])+\
-                          ' | '+u'\u5b9e\u5230\uff1a'+ActAr[0]
-                print infoStr
+                infoStr = 'Re: '+'Train No:'+queryCache[i]['trainNum']+\
+                          ' | '+'Station Telecode:'+staInfo['staTele']+\
+                          ' | '+'Schedule Arrival Time:'+tools.int2str(queryCache[i]['arrTime'])+\
+                          ' | '+'Actual Arrival Time:'+ActAr[0]
+                log.write(infoStr)
                 if ActAr[0] == '99:99':
                     queryCache[i]['status'] =queryCache[i]['status'] +1
                     if queryCache[i]['status'] >2:
-                        print 'too many bad connection, quit'
+                        log.write('too many bad connection, quit')
                         queryCache.pop(i)
                     i =i +1
                 else:
                     actInt =tools.str2int(ActAr[0])
                     if nowInt-actInt>=0 and nowInt-actInt<=60:
-                        print u'\u6CA1\u95EE\u9898\uFF0C\u5199\u5165\u6570\u636E\u5E93\uFF1A'+\
-                            queryCache[i]['trainNum'] +queryCache[i]['arrSta'] +ActAr[0]
+                        log.write('No problem, write to database: '+\
+                            queryCache[i]['trainNum'] +'' +queryCache[i]['arrSta'] +'' +ActAr[0])
                         ressdb.saveRes(queryCache[i]['trainNum'], queryCache[i]['arrSta'], queryCache[i]['arrTime'], actInt)
                         queryCache.pop(i)
                     elif nowInt-actInt>=-1440 and nowInt-actInt<=-1380:
-                        print u'\u53D1\u751F\u96F6\u70B9\u4EA4\u8D8A\uFF0C\u5199\u5165\u6570\u636E\u5E93\uFF1A'+\
-                            queryCache[i]['trainNum'] +queryCache[i]['arrSta'] +ActAr[0]
+                        log.write('Cross Zero, write to database: '+\
+                            queryCache[i]['trainNum'] +'' +queryCache[i]['arrSta'] +'' +ActAr[0])
                         ressdb.saveRes(queryCache[i]['trainNum'], queryCache[i]['arrSta'], queryCache[i]['arrTime'], actInt)
                         queryCache.pop(i)
                     else:
-                        print queryCache[i]['trainNum'] +queryCache[i]['arrSta'] +tools.int2str(queryCache[i]['actTime']) +ActAr[0]
+                        log.write(queryCache[i]['trainNum'] +'' +queryCache[i]['arrSta'] +'' +tools.int2str(queryCache[i]['actTime']) +'' +ActAr[0])
                         queryCache[i]['actTime'] = actInt
-                        # late of an hour or more
-                        if actInt-nowInt>60 or (actInt-nowInt>-1440 and actInt-nowInt<-1080):
-                            tgChat.sendMsg(textMsg =infoStr.encode('utf8'))
                         i =i +1
-                
-                print '- '*32
             else:
                 i= i +1
-        print '='*64
         time.sleep(48)
         # except (urllib2.URLError, urllib2.HTTPError), err:
         #     print err 
         #     print 'quit'
 
 if __name__ == "__main__":
-    try:
-        getData()
-    except KeyboardInterrupt, err:
-        print err
-        print 'bye'
+    getData()
