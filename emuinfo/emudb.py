@@ -1,17 +1,23 @@
 #--------------------------------------------------------------------------------#
 # File name:emudb.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-25
+# Last edit time(Y-m-d):2018-04-15
 # Description:This is the model of emuDB.EmuDB is the database that stores 
 #             information about emu trains.This infomation contians emu model
 #             (as type), department, departure&arrival station and so on.Function
 #             store() can store infos to database from json files.
 #--------------------------------------------------------------------------------#
 
+def loadModule(name, path):
+    import os, imp
+    return imp.load_source(name, os.path.join(os.path.dirname(__file__), path))
+
+loadModule('config', '../config.py')
+import config
 from pymongo import MongoClient
 
 class emuDb(object):
-    def __init__(self, address='127.0.0.1', port=27017):
+    def __init__(self, address=config.databaseIp, port=config.databasePort):
         self.mydb =MongoClient(address, port).emudb
         print 'emudb loaded'
 
@@ -84,6 +90,7 @@ def store(fileName='emuinfo.json'):
     with open(fileName, 'r') as fi:
         emuinfo = json.load(fi)
     myDb = emuinfoDb()
+    print str(myDb.deleteInfo()) +' : deleted'
     for every in emuinfo:
         myDb.storeData(every)
     print 'Store '+fileName+' Done'
