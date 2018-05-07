@@ -1,17 +1,22 @@
 #--------------------------------------------------------------------------------#
 # File name:db2.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-25
+# Last edit time(Y-m-d):2018-05-07
 # Description:This is the model of main database that contains lating information
 #             and station information and list of trains.
 #--------------------------------------------------------------------------------#
 
+def loadModule(name, path):
+    import os, imp
+    return imp.load_source(name, os.path.join(os.path.dirname(__file__), path))
+
+loadModule('config', '../config.py')
+import config
 from pymongo import MongoClient
-zoneDelta =7
 
 class db(object):
 
-    def __init__(self, address='127.0.0.1', port=27017):
+    def __init__(self, address=config.databaseIp, port=config.databasePort):
         self.mydb = MongoClient(address, port).wxdb
         print 'Wx Database Init Done'
 
@@ -125,7 +130,7 @@ class resDb(db):
 
     def saveRes(self, trainNum, arrSta, sch, act):
         import datetime
-        self.__ress.insert_one({"resTime":datetime.datetime.now() + datetime.timedelta(hours = zoneDelta), "trainNum":trainNum, "arrSta":arrSta, "schTime":sch, "actTime":act})
+        self.__ress.insert_one({"resTime":datetime.datetime.now() + datetime.timedelta(hours = config.zoneDelta), "trainNum":trainNum, "arrSta":arrSta, "schTime":sch, "actTime":act})
         return 1
     
     def saveJson(self, resDict):
@@ -208,7 +213,7 @@ def exportSch(fileName ='allsch.json'):
         print 'export sch failed'
     
 def exportRes(fileName ='allres.json'):
-    import json, datetime
+    import json
     resdb =resDb()
     queryresStatus, allres =resdb.allRes()
     resList =[]
