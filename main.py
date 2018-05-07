@@ -10,10 +10,10 @@ from flask import Flask, request
 from encrypt.WXBizMsgCrypt import WXBizMsgCrypt
 from wx import reply2, receive
 from dialogue import dialogue
-import keys
+import config
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = keys.appSecretyKey
+app.config['SECRET_KEY'] = config.appSecretyKey
 
 #url for home page
 @app.route('/')
@@ -30,7 +30,7 @@ def handle():
             stamp = request.args.get('timestamp')
             nonce = request.args.get('nonce')
             echo = request.args.get('echostr')
-            token = keys.token
+            token = config.token
 
             list = [token, stamp, nonce]
             list.sort()
@@ -48,9 +48,9 @@ def handle():
 # process the query and return replies
     elif request.method == 'POST':
         try:
-            token = keys.token
-            encodingkey = keys.encodingkey
-            appid = keys.appid
+            token = config.token
+            encodingkey = config.encodingkey
+            appid = config.appid
             decryptObj = WXBizMsgCrypt(token, encodingkey, appid)
             stamp = request.args.get('timestamp')
             nonce = request.args.get('nonce')

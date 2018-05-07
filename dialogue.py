@@ -5,6 +5,7 @@
 # Description:To analyse the text sent by users and search for data in need, 
 #             finally an easy-to-read answer will be returned.
 #--------------------------------------------------------------------------------#
+import config
 
 def dialogue(user, word):
     from lateinfo import tools, db2, hook
@@ -211,7 +212,7 @@ def dialogue(user, word):
 # the database of every text
 class diaDb(object):
 
-    def __init__(self, address='127.0.0.1', port=27017):
+    def __init__(self, address=config.databaseIp, port=config.databasePort):
         from pymongo import MongoClient
         self.__diaset = MongoClient(address, port).diadb.diaset
         print 'diadb init done'
