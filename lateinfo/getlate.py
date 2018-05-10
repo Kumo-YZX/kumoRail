@@ -12,7 +12,12 @@ import json
 import db2, hook, datetime, random, re, time, socket
 import writeLog
 
-zoneDelta =0 # delta between your timezone and HKT
+def loadModule(name, path):
+    import os, imp
+    return imp.load_source(name, os.path.join(os.path.dirname(__file__), path))
+
+loadModule('config', '../config.py')
+import config
 
 def getData():
 
@@ -27,7 +32,7 @@ def getData():
 
     while(True):
         
-        nowTime = datetime.datetime.now() + datetime.timedelta(hours = zoneDelta)
+        nowTime = datetime.datetime.now() + datetime.timedelta(hours = config.zoneDelta)
         today = nowTime.strftime('%Y-%m-%d')
         nowInt = nowTime.hour*60 +nowTime.minute
         log.write('Time:' +tools.int2str(nowInt))
