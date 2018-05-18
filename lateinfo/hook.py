@@ -1,10 +1,10 @@
 #--------------------------------------------------------------------------------#
 # File name:hook.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-14
+# Last edit time(Y-m-d):2018-05-18
 # Description:Provide hooks to catch data from website.
 #--------------------------------------------------------------------------------#
-import urllib2, json, socket
+import urllib2, json, socket, httplib
 import writeLog
 
 header={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -80,8 +80,9 @@ class getLate(object):
         try:
             request = urllib2.Request(self._apiUrl, headers=header)
             Res2 = urllib2.urlopen(request, timeout=5).read().decode('gbk')
-        except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error) as error:
-            log.write(json.dumps(error))
+        except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error, httplib.BadStatusLine) as error:
+            log.write(str(type(error)))
+            log.write(str(error))
             log.write('proxy connect failed : ' +self._proxyUrl)
             self._proxyList[proxyNo +(self._group)*3]['fail'] +=1
             return 0, ''
@@ -96,8 +97,9 @@ class getLate(object):
         try:
             request = urllib2.Request(self._apiUrl, headers=header)
             Res2 = urllib2.urlopen(request, timeout=5).read().decode('gbk')
-        except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error) as error:
-            log.write(json.dumps(error))
+        except (urllib2.HTTPError, urllib2.URLError, socket.timeout, socket.error, httplib.BadStatusLine) as error:
+            log.write(str(type(error)))
+            log.write(str(error))
             log.write('local connect failed')
             return 0, ''
         return 1, Res2
