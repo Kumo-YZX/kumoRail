@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:getlate.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-05-05
+# Last edit time(Y-m-d):2018-05-10
 # Description:This script runs independently to collect information of trains'
 #             arrival time.An endless loop is held in function getData but it 
 #             will be replaced in later version.
