@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:tools.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-24
+# Last edit time(Y-m-d):2018-05-19
 # Description:Many functions that contians analysis tools and transform 
 #             tools.This functions will be combained with other objects in later 
 #             version to make them appropriate.
@@ -36,8 +36,11 @@ def wordAnalyse(word):
     if word02 == 'TJ':
         return 19
     
-    # if word02 == 'SC':
-    #     return 20
+    if word02 == 'SC':
+        return 20
+
+    if word02 =='LY':
+        return 21
 
     print 'str contains chinese'
     # byteword = word.encode('utf8')
