@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------#
 # File name:dialogue.py
 # Author:Kumo
-# Last edit time(Y-m-d):2018-04-24
+# Last edit time(Y-m-d):2018-05-19
 # Description:To analyse the text sent by users and search for data in need, 
 #             finally an easy-to-read answer will be returned.
 #--------------------------------------------------------------------------------#
@@ -170,9 +170,14 @@ def dialogue(user, word):
             userqueryStatus, userInfo = userdb.findByName(user)
             if userqueryStatus:
                 res =u'\u6DFB\u52A0\u7ED3\u679C\uFF1A'
-                word = str.upper(word[2:len(word)])
+                wordSpl =word.split('-')
+                trainNum = str.upper(wordSpl[0][2:])
+                if len(wordSpl) ==2:
+                    groupNum = int(wordSpl[1])
+                else:
+                    groupNum =2
                 trainSch =hook.trainData()
-                trainSch.setTrainNum(word)
+                trainSch.setTrainNum(trainNum)
                 stadb =db2.staDb()
                 schdb =db2.schDb()
                 if trainSch.getTrainStrcode() in [0,2]:
@@ -184,15 +189,24 @@ def dialogue(user, word):
                             pass
                         else:
                             staQuery, staData =stadb.searchByCn(every['station_name'])
-                            schdb.saveSch(word, staData['staTele'], tools.str2int(every['arrive_time']), userInfo['userId'])
+                            schdb.saveSch(trainNum, staData['staTele'], tools.str2int(every['arrive_time']), groupNum)
                             res =res +u'\n'+ every['station_name'] +every['arrive_time']
             else:
                 res =u'\u6CA1\u6709\u60A8\u7684\u7528\u6237\u4FE1\u606F\uFF01'
 
-        # elif category ==20:
-        #     userdb =db2.userDb()
-        #     userqueryStatus, userInfo = userdb.findByName(user)
-        #     res =u'\u6DFB\u52A0\u7ED3\u679C\uFF1A'
+        elif category ==20:
+            userdb =db2.userDb()
+            userqueryStatus, userInfo = userdb.findByName(user)
+            # res =u'\u6DFB\u52A0\u7ED3\u679C\uFF1A'
+            if userqueryStatus:
+                schdb =db2.schDb()
+                deleteNum =schdb.deleteSch(str.upper(word[2:]))
+                res =u'\u5220\u9664\u6570\u91CF\uFF1A' +str(deleteNum)
+            else:
+                res =u'\u5BF9\u4E0D\u8D77\uFF0C\u60A8\u4E0D\u662F\u6307\u5B9A\u7528\u6237'
+                
+        elif category ==21:
+            res =u'\u611F\u8C22\u60A8\u7684\u7559\u8A00\uFF0C\u6211\u4EEC\u4F1A\u5C3D\u5FEB\u56DE\u590D'
 
 # an error occurs
         elif category == 99:
