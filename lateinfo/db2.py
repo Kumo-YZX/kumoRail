@@ -1,9 +1,9 @@
 #--------------------------------------------------------------------------------#
-# File name:db2.py
-# Author:Kumo
-# Last edit time(Y-m-d):2018-05-07
-# Description:This is the model of main database that contains lating information
-#             and station information and list of trains.
+# File name:db2.py                                                               #
+# Author:Kumo                                                                    #
+# Last edit time(Y-m-d):2018-06-08                                               #
+# Description:This is the model of main database that contains lating information#
+#             and station information and list of trains.                        #
 #--------------------------------------------------------------------------------#
 
 def loadModule(name, path):
@@ -101,6 +101,13 @@ class schDb(db):
     
     def querySch(self, trainNum):
         res = self.__schs.find({"trainNum": trainNum})
+        if res.count():
+            return 1, res
+        else:
+            return 0, []
+
+    def querySchByGroup(self, group):
+        res = self.__schs.find({"group": group})
         if res.count():
             return 1, res
         else:
