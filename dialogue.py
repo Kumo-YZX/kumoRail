@@ -1,9 +1,9 @@
 #--------------------------------------------------------------------------------#
-# File name:dialogue.py
-# Author:Kumo
-# Last edit time(Y-m-d):2018-05-19
-# Description:To analyse the text sent by users and search for data in need, 
-#             finally an easy-to-read answer will be returned.
+# File name:dialogue.py                                                          #
+# Author:Kumo                                                                    #
+# Last edit time(Y-m-d):2018-06-08                                               #
+# Description:To analyse the text sent by users and search for data in need,     #
+#             finally an easy-to-read answer will be returned.                   #
 #--------------------------------------------------------------------------------#
 import config
 
@@ -16,12 +16,26 @@ def dialogue(user, word):
 # query for all trains that are monitored
         if category == 1:
             schdb = db2.schDb()
-            status, schall = schdb.allSch()
-            trainAll = []
-            for every in schall:
-                if every['trainNum'] not in trainAll:
-                    trainAll.append(every['trainNum'])
-            res = u'\u6240\u6709\u8f66\u6b21\uff1a'+' & '.join(trainAll)
+            res =u''
+            for everyGroup in range(8):
+                trainList =[]
+                res += str(everyGroup)
+                res += u'\u7EC4:\n'
+                status, schall = schdb.querySchByGroup(everyGroup)
+                if status:
+                    for everyTrain in schall:
+                        if everyTrain['trainNum'] not in trainList:
+                            trainList.append(everyTrain['trainNum'])
+                    res +=' & '.join(trainList)
+                    res +=u'\n'
+                else:
+                    res +=u'\u7A7A\n'
+
+            # trainAll = []
+            # for every in schall:
+            #     if every['trainNum'] not in trainAll:
+            #         trainStr=every['trainNum']
+            #         trainAll.append(trainStr)
 # query for information of EMU
         elif category in [2,13]:
             res = hook.processEmuno(word[len(word)-4:len(word)]) 
