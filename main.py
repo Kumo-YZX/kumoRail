@@ -1,9 +1,9 @@
 #--------------------------------------------------------------------------------#
-# File:main.py
-# Author:Kumo
-# Last edit time(Y-m-d):2018-03-29
-# Description:The main program of flask server. You can run this script directly 
-#             to test the service. 
+# File:main.py                                                                   #
+# Author:Kumo                                                                    #
+# Last edit time(Y-m-d):2018-06-08                                               #
+# Description:The main program of flask server. You can run this script directly #
+#             to test the service.                                               #
 #--------------------------------------------------------------------------------#
 
 from flask import Flask, request
@@ -72,9 +72,16 @@ def handle():
                 return replyData
             else:
                 print 'wrong format'
-                return '<>'
+                toUser = recData.FromUserName
+                fromUser = recData.ToUserName
+                content =(u'\u56fe\u7247\u683c\u5f0f\u4e0d\u53d7\u652f\u6301').encode('utf8')
+                encryptObj = WXBizMsgCrypt(token, encodingkey, appid)
+                encStatus, replyData = encryptObj.EncryptMsg(reply2.TextMsg(toUser, fromUser, content), nonce, stamp)
+                if encStatus:
+                    return 'Encrypt fail:' + str(encStatus)
+                return replyData
         except Exception, Argment:
             return Argment
 
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0', port=8098)
+    app.run(host = '0.0.0.0', port=8086)
