@@ -1,4 +1,4 @@
-# railGazer
+# kumoRail
 A chat bot to help you know more about China railway!
 
 ------Description and user's guide of railGazer project------
